@@ -9,6 +9,7 @@ import {
   orderBy,
   onSnapshot
 } from 'firebase/firestore';
+import { signInAnonymously } from 'firebase/auth';
 import { db, auth } from './config';
 import { env } from '../config/env';
 import { Expense } from '../types/expense';
@@ -30,24 +31,37 @@ export async function saveUserProfile(user: UserProfile): Promise<void> {
 // Expenses Firestore Methods
 export async function saveExpenseToFirestore(userId: string, expense: Expense): Promise<void> {
   if (!env.firebase.isConfigured) return;
-  const currentUid = auth.currentUser ? auth.currentUser.uid : userId;
+
+  // Ensure active Firebase Auth session before writing
+  let activeUid = auth.currentUser?.uid;
+  if (!activeUid) {
+    try {
+      const anonRes = await signInAnonymously(auth);
+      activeUid = anonRes.user.uid;
+    } catch (e) {
+      activeUid = userId;
+    }
+  }
+
+  const expId = expense.id || `exp-${Date.now()}`;
 
   try {
-    const expenseData = { ...expense, userId: currentUid };
+    const expenseData = { ...expense, id: expId, userId: activeUid };
 
-    // 1. Save to user subcollection
-    const expRef = doc(db, 'users', currentUid, 'expenses', expense.id);
-    await setDoc(expRef, expenseData);
-
-    // 2. Save to top-level expenses collection for easy Firebase Console access
-    const globalExpRef = doc(db, 'expenses', expense.id);
+    // 1. Save to top-level expenses collection (visible immediately in Firebase Console)
+    const globalExpRef = doc(db, 'expenses', expId);
     await setDoc(globalExpRef, expenseData);
+
+    // 2. Save to user subcollection
+    const expRef = doc(db, 'users', activeUid, 'expenses', expId);
+    await setDoc(expRef, expenseData);
 
     // 3. Sync to group subcollection if applicable
     if (expense.groupId) {
-      const groupExpRef = doc(db, 'groups', expense.groupId, 'expenses', expense.id);
+      const groupExpRef = doc(db, 'groups', expense.groupId, 'expenses', expId);
       await setDoc(groupExpRef, expenseData);
     }
+    console.log('Successfully saved expense to Firebase Firestore:', expId);
   } catch (err) {
     console.error('Could not save expense to Firestore:', err);
   }
@@ -58,11 +72,11 @@ export async function deleteExpenseFromFirestore(userId: string, expenseId: stri
   const currentUid = auth.currentUser ? auth.currentUser.uid : userId;
 
   try {
-    const expRef = doc(db, 'users', currentUid, 'expenses', expenseId);
-    await deleteDoc(expRef);
-
     const globalExpRef = doc(db, 'expenses', expenseId);
     await deleteDoc(globalExpRef);
+
+    const expRef = doc(db, 'users', currentUid, 'expenses', expenseId);
+    await deleteDoc(expRef);
 
     if (groupId) {
       const groupExpRef = doc(db, 'groups', groupId, 'expenses', expenseId);

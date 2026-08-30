@@ -235,7 +235,7 @@ export function App() {
 
     setExpenses((prev) => [created, ...prev]);
 
-    if (!user.isDemoUser && env.firebase.isConfigured) {
+    if (env.firebase.isConfigured) {
       await saveExpenseToFirestore(activeUid, created);
     }
 
@@ -244,15 +244,9 @@ export function App() {
 
   const handleDeleteExpense = async (id: string) => {
     const target = expenses.find((e) => e.id === id);
-    setExpenses((prev) => {
-      const updated = prev.filter((e) => e.id !== id);
-      if (!user.isDemoUser) {
-        localStorage.setItem('pennypilot_expenses', JSON.stringify(updated));
-      }
-      return updated;
-    });
+    setExpenses((prev) => prev.filter((e) => e.id !== id));
 
-    if (!user.isDemoUser && env.firebase.isConfigured) {
+    if (env.firebase.isConfigured) {
       await deleteExpenseFromFirestore(user.uid, id, target?.groupId);
     }
     showToast('Expense deleted', 'info');
