@@ -29,38 +29,52 @@ export async function saveUserProfile(user: UserProfile): Promise<void> {
 
 // Expenses Firestore Methods
 export async function saveExpenseToFirestore(userId: string, expense: Expense): Promise<void> {
-  if (!env.firebase.isConfigured || !auth.currentUser) return;
-  try {
-    const expRef = doc(db, 'users', userId, 'expenses', expense.id);
-    await setDoc(expRef, expense);
+  if (!env.firebase.isConfigured) return;
+  const currentUid = auth.currentUser ? auth.currentUser.uid : userId;
 
-    // If group expense, sync to group subcollection as well
+  try {
+    const expenseData = { ...expense, userId: currentUid };
+
+    // 1. Save to user subcollection
+    const expRef = doc(db, 'users', currentUid, 'expenses', expense.id);
+    await setDoc(expRef, expenseData);
+
+    // 2. Save to top-level expenses collection for easy Firebase Console access
+    const globalExpRef = doc(db, 'expenses', expense.id);
+    await setDoc(globalExpRef, expenseData);
+
+    // 3. Sync to group subcollection if applicable
     if (expense.groupId) {
       const groupExpRef = doc(db, 'groups', expense.groupId, 'expenses', expense.id);
-      await setDoc(groupExpRef, expense);
+      await setDoc(groupExpRef, expenseData);
     }
   } catch (err) {
-    console.warn('Could not save expense to Firestore:', err);
+    console.error('Could not save expense to Firestore:', err);
   }
 }
 
 export async function deleteExpenseFromFirestore(userId: string, expenseId: string, groupId?: string): Promise<void> {
-  if (!env.firebase.isConfigured || !auth.currentUser) return;
+  if (!env.firebase.isConfigured) return;
+  const currentUid = auth.currentUser ? auth.currentUser.uid : userId;
+
   try {
-    const expRef = doc(db, 'users', userId, 'expenses', expenseId);
+    const expRef = doc(db, 'users', currentUid, 'expenses', expenseId);
     await deleteDoc(expRef);
+
+    const globalExpRef = doc(db, 'expenses', expenseId);
+    await deleteDoc(globalExpRef);
 
     if (groupId) {
       const groupExpRef = doc(db, 'groups', groupId, 'expenses', expenseId);
       await deleteDoc(groupExpRef);
     }
   } catch (err) {
-    console.warn('Could not delete expense from Firestore:', err);
+    console.error('Could not delete expense from Firestore:', err);
   }
 }
 
 export function subscribeUserExpenses(userId: string, callback: (expenses: Expense[]) => void) {
-  if (!env.firebase.isConfigured || !auth.currentUser) {
+  if (!env.firebase.isConfigured) {
     return () => {};
   }
 
@@ -88,7 +102,7 @@ export function subscribeUserExpenses(userId: string, callback: (expenses: Expen
 
 // Groups Firestore Methods
 export async function saveGroupToFirestore(group: Group): Promise<void> {
-  if (!env.firebase.isConfigured || !auth.currentUser) return;
+  if (!env.firebase.isConfigured) return;
   try {
     const groupRef = doc(db, 'groups', group.id);
     await setDoc(groupRef, group);
@@ -98,7 +112,7 @@ export async function saveGroupToFirestore(group: Group): Promise<void> {
 }
 
 export function subscribeUserGroups(userId: string, callback: (groups: Group[]) => void) {
-  if (!env.firebase.isConfigured || !auth.currentUser) {
+  if (!env.firebase.isConfigured) {
     return () => {};
   }
 
@@ -110,7 +124,7 @@ export function subscribeUserGroups(userId: string, callback: (groups: Group[]) 
         const groupList: Group[] = [];
         snapshot.forEach((docSnap) => {
           const g = docSnap.data() as Group;
-          if (g.members && g.members.some((m) => m.id === userId)) {
+          if (!g.members || g.members.some((m) => m.id === userId)) {
             groupList.push(g);
           }
         });
@@ -128,9 +142,10 @@ export function subscribeUserGroups(userId: string, callback: (groups: Group[]) 
 
 // Settlements Firestore Methods
 export async function saveSettlementToFirestore(userId: string, settlement: Settlement): Promise<void> {
-  if (!env.firebase.isConfigured || !auth.currentUser) return;
+  if (!env.firebase.isConfigured) return;
+  const currentUid = auth.currentUser ? auth.currentUser.uid : userId;
   try {
-    const setRef = doc(db, 'users', userId, 'settlements', settlement.id);
+    const setRef = doc(db, 'users', currentUid, 'settlements', settlement.id);
     await setDoc(setRef, settlement);
   } catch (err) {
     console.warn('Could not save settlement to Firestore:', err);
@@ -138,7 +153,7 @@ export async function saveSettlementToFirestore(userId: string, settlement: Sett
 }
 
 export function subscribeUserSettlements(userId: string, callback: (settlements: Settlement[]) => void) {
-  if (!env.firebase.isConfigured || !auth.currentUser) {
+  if (!env.firebase.isConfigured) {
     return () => {};
   }
 

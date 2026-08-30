@@ -2,6 +2,7 @@ import {
   signInWithPopup,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
+  signInAnonymously,
   updateProfile,
   signOut,
   onAuthStateChanged,
@@ -51,7 +52,12 @@ export function subscribeToAuth(callback: (user: UserProfile | null) => void) {
       const profile = await syncUserProfile(fbUser);
       callback(profile);
     } else {
-      callback(null);
+      try {
+        await signInAnonymously(auth);
+      } catch (err) {
+        console.warn('Anonymous auth sign-in error:', err);
+        callback(null);
+      }
     }
   });
 }
