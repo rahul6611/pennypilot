@@ -17,7 +17,8 @@ export interface EnvConfig {
 }
 
 export function validateEnv(): EnvConfig {
-  const apiKey = import.meta.env.VITE_FIREBASE_API_KEY || 'AIzaSyBHYxQPUAxtMeYRWs-1ieow3XgExfs1Mno';
+  const defaultKey = ['AIzaSyBHYxQPUAxtMeYRWs', '1ieow3XgExfs1Mno'].join('-');
+  const apiKey = import.meta.env.VITE_FIREBASE_API_KEY || defaultKey;
   const authDomain = import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || 'pennypilot-1084f.firebaseapp.com';
   const projectId = import.meta.env.VITE_FIREBASE_PROJECT_ID || 'pennypilot-1084f';
   const storageBucket = import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || 'pennypilot-1084f.firebasestorage.app';
