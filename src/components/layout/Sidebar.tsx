@@ -46,7 +46,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         className="w-full mb-6 py-3 px-4 rounded-2xl bg-gradient-to-r from-brand-600 via-indigo-600 to-emerald-500 text-white font-semibold text-sm flex items-center justify-center gap-2 shadow-lg shadow-indigo-500/25 transition-all"
       >
         <Plus className="w-5 h-5" />
-        <span>+ Add Expense</span>
+        <span>Add Expense</span>
       </motion.button>
 
       {/* Nav List */}
