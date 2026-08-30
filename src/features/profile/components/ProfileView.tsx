@@ -14,6 +14,7 @@ export interface ProfileViewProps {
   onDeleteAccount: () => void;
   onResetDemoData: () => void;
   onClearData?: () => void;
+  onLogout?: () => void;
 }
 
 export const ProfileView: React.FC<ProfileViewProps> = ({
@@ -22,7 +23,8 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
   onUpdateBudget,
   onDeleteAccount,
   onResetDemoData,
-  onClearData
+  onClearData,
+  onLogout
 }) => {
   const [budgetInput, setBudgetInput] = useState(user.monthlyBudget.toString());
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -43,21 +45,35 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
       </div>
 
       {/* User Card */}
-      <Card variant="glow" className="flex items-center gap-4 bg-slate-900">
-        <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-brand-600 to-emerald-400 font-bold text-xl text-white flex items-center justify-center shadow-lg">
-          {user.displayName.charAt(0)}
-        </div>
-        <div className="flex-1">
-          <div className="flex items-center gap-2">
-            <h3 className="text-base font-extrabold text-white">{user.displayName}</h3>
-            {user.isDemoUser && (
-              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-brand-500/20 text-brand-300">
-                Demo Account
-              </span>
-            )}
+      <Card variant="glow" className="flex items-center justify-between gap-4 bg-slate-900">
+        <div className="flex items-center gap-4">
+          <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-brand-600 to-emerald-400 font-bold text-xl text-white flex items-center justify-center shadow-lg">
+            {user.displayName ? user.displayName.charAt(0).toUpperCase() : 'U'}
           </div>
-          <p className="text-xs text-slate-400 mt-0.5">{user.email || 'guest@pennypilot.app'}</p>
+          <div>
+            <div className="flex items-center gap-2">
+              <h3 className="text-base font-extrabold text-white">{user.displayName}</h3>
+              {user.isDemoUser && (
+                <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-brand-500/20 text-brand-300">
+                  Demo Account
+                </span>
+              )}
+            </div>
+            <p className="text-xs text-slate-400 mt-0.5">{user.email || 'guest@pennypilot.app'}</p>
+          </div>
         </div>
+
+        {onLogout && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onLogout}
+            className="border-rose-500/30 text-rose-400 hover:bg-rose-500/20 hover:text-white"
+            leftIcon={<LogOut className="w-3.5 h-3.5" />}
+          >
+            Log Out
+          </Button>
+        )}
       </Card>
 
       {/* Currency & Budget Preferences */}

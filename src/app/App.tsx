@@ -348,6 +348,19 @@ export function App() {
     showToast('Signed out & local state cleared.', 'warning');
   };
 
+  const handleLogout = async () => {
+    await logoutUser();
+    localStorage.removeItem('pennypilot_logged_in');
+    localStorage.removeItem('pennypilot_user');
+    localStorage.removeItem('pennypilot_expenses');
+    setUser({ ...DEFAULT_USER, displayName: 'Guest User', email: null });
+    setExpenses([]);
+    setGroups([]);
+    setSettlements([]);
+    setIsLoggedIn(false);
+    showToast('Logged out successfully.', 'info');
+  };
+
   if (!isLoggedIn) {
     return (
       <AuthScreen
@@ -377,6 +390,7 @@ export function App() {
           setActiveTab(tab);
         }}
         onOpenAddExpense={() => setIsAddExpenseOpen(true)}
+        onLogout={handleLogout}
       />
 
       {/* Main Content Workspace */}
@@ -391,6 +405,7 @@ export function App() {
           user={user}
           onOpenAuthModal={() => setIsAuthModalOpen(true)}
           onOpenProfile={() => setActiveTab('profile')}
+          onLogout={handleLogout}
         />
 
         <OfflineBanner isOffline={isOffline} wasOffline={wasOffline} />
@@ -528,6 +543,7 @@ export function App() {
                 onDeleteAccount={handleDeleteAccount}
                 onResetDemoData={handleResetDemoData}
                 onClearData={handleClearData}
+                onLogout={handleLogout}
               />
             )}
           </PullToRefresh>

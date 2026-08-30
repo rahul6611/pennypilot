@@ -8,12 +8,14 @@ export interface SidebarProps {
   activeTab: NavTab;
   onSelectTab: (tab: NavTab) => void;
   onOpenAddExpense: () => void;
+  onLogout?: () => void;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
   activeTab,
   onSelectTab,
-  onOpenAddExpense
+  onOpenAddExpense,
+  onLogout
 }) => {
   const items = [
     { id: 'home' as NavTab, label: 'Dashboard', icon: LayoutDashboard },
@@ -72,10 +74,20 @@ export const Sidebar: React.FC<SidebarProps> = ({
         })}
       </nav>
 
-      {/* Footer info */}
-      <div className="pt-4 border-t border-slate-800/80 text-xs text-slate-500 px-3">
-        <p className="font-semibold text-slate-400">PennyPilot 2026 PWA</p>
-        <p className="text-[11px] mt-0.5">Offline-first & Smart Split</p>
+      {/* Footer info & Logout */}
+      <div className="pt-4 border-t border-slate-800/80 space-y-3">
+        {onLogout && (
+          <button
+            onClick={onLogout}
+            className="w-full flex items-center gap-3 px-4 py-2.5 rounded-2xl text-sm font-semibold text-rose-400 hover:text-white hover:bg-rose-500/15 border border-rose-500/20 transition-all"
+          >
+            <span>Sign Out / Log Out</span>
+          </button>
+        )}
+        <div className="text-xs text-slate-500 px-1">
+          <p className="font-semibold text-slate-400">PennyPilot 2026 PWA</p>
+          <p className="text-[11px] mt-0.5">Offline-first & Smart Split</p>
+        </div>
       </div>
     </aside>
   );

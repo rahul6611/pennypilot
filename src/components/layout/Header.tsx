@@ -13,6 +13,7 @@ export interface HeaderProps {
   user: UserProfile;
   onOpenAuthModal: () => void;
   onOpenProfile: () => void;
+  onLogout?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -24,7 +25,8 @@ export const Header: React.FC<HeaderProps> = ({
   currency,
   user,
   onOpenAuthModal,
-  onOpenProfile
+  onOpenProfile,
+  onLogout
 }) => {
   return (
     <header className="sticky top-0 z-30 bg-slate-950/90 backdrop-blur-xl border-b border-slate-800/80 px-4 pt-safe pb-3">
@@ -101,6 +103,18 @@ export const Header: React.FC<HeaderProps> = ({
             )}
             <span className="max-w-[100px] truncate">{user.displayName || 'Account'}</span>
           </button>
+
+          {/* Logout Button */}
+          {onLogout && (
+            <button
+              onClick={onLogout}
+              className="p-2 rounded-2xl text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 border border-rose-500/20 transition-all flex items-center gap-1.5 text-xs font-semibold px-3"
+              title="Log Out"
+            >
+              <LogIn className="w-4 h-4 rotate-180" />
+              <span className="hidden sm:inline">Log Out</span>
+            </button>
+          )}
         </div>
       </div>
     </header>
