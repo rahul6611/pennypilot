@@ -19,6 +19,7 @@ import { MonthlyReportView } from '../features/ai/components/MonthlyReportView';
 import { AnalyticsView } from '../features/analytics/components/AnalyticsView';
 import { RecurringList } from '../features/recurring/components/RecurringList';
 import { ProfileView } from '../features/profile/components/ProfileView';
+import { initThemeListener } from '../utils/themeService';
 
 import { AuthModal } from '../features/auth/components/AuthModal';
 import { AuthScreen } from '../features/auth/components/AuthScreen';
@@ -135,6 +136,11 @@ export function App() {
     setToast({ isVisible: true, message, type });
     setTimeout(() => setToast((t) => ({ ...t, isVisible: false })), 3500);
   };
+
+  // Initialize theme mode preference (Dark / Light / System)
+  useEffect(() => {
+    return initThemeListener();
+  }, []);
 
   // Subscribe to Firebase Auth state
   useEffect(() => {

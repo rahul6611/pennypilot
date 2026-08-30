@@ -5,7 +5,8 @@ import { Input } from '../../../components/common/Input';
 import { Modal } from '../../../components/common/Modal';
 import { CURRENCIES } from '../../../config/constants';
 import { UserProfile } from '../../../types/user';
-import { User, Shield, CreditCard, Trash2, LogOut, Sparkles, AlertTriangle } from 'lucide-react';
+import { User, Shield, CreditCard, Trash2, LogOut, Sparkles, AlertTriangle, Moon, Sun, Laptop, Palette } from 'lucide-react';
+import { getStoredTheme, applyThemeMode, ThemeMode } from '../../../utils/themeService';
 
 export interface ProfileViewProps {
   user: UserProfile;
@@ -28,6 +29,12 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
 }) => {
   const [budgetInput, setBudgetInput] = useState(user.monthlyBudget.toString());
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [themeMode, setThemeMode] = useState<ThemeMode>(() => getStoredTheme());
+
+  const handleThemeChange = (mode: ThemeMode) => {
+    setThemeMode(mode);
+    applyThemeMode(mode);
+  };
 
   const handleBudgetSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,6 +43,12 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
       onUpdateBudget(val);
     }
   };
+
+  const THEMES: { mode: ThemeMode; label: string; icon: any }[] = [
+    { mode: 'dark', label: 'Dark Mode', icon: Moon },
+    { mode: 'light', label: 'Light Mode', icon: Sun },
+    { mode: 'system', label: 'System Default', icon: Laptop }
+  ];
 
   return (
     <div className="space-y-5">
@@ -59,6 +72,36 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
             )}
           </div>
           <p className="text-xs text-slate-400 mt-0.5">{user.email || 'guest@pennypilot.app'}</p>
+        </div>
+      </Card>
+
+      {/* Theme & Appearance Preferences */}
+      <Card variant="glass" className="space-y-3">
+        <h3 className="text-sm font-bold text-slate-100 flex items-center gap-2">
+          <Palette className="w-4 h-4 text-brand-400" /> App Theme / Appearance
+        </h3>
+        <p className="text-xs text-slate-400">Choose your visual theme or follow your system settings</p>
+
+        <div className="grid grid-cols-3 gap-2.5 pt-1">
+          {THEMES.map((item) => {
+            const IconComp = item.icon;
+            const isSelected = themeMode === item.mode;
+            return (
+              <button
+                key={item.mode}
+                type="button"
+                onClick={() => handleThemeChange(item.mode)}
+                className={`p-3 rounded-2xl border text-xs font-semibold flex flex-col items-center gap-1.5 transition-all ${
+                  isSelected
+                    ? 'border-brand-500 bg-brand-500/20 text-white shadow-lg ring-1 ring-brand-500'
+                    : 'border-slate-800 bg-slate-950/70 text-slate-400 hover:border-slate-700 hover:text-slate-200'
+                }`}
+              >
+                <IconComp className={`w-5 h-5 ${isSelected ? 'text-brand-300' : 'text-slate-400'}`} />
+                <span className="text-[11px] font-bold">{item.label}</span>
+              </button>
+            );
+          })}
         </div>
       </Card>
 
