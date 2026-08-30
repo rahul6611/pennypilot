@@ -19,8 +19,19 @@
   /* Complete Clean Light Mode Overrides */
   html.light,
   html.light body,
-  html.light #root {
+  html.light #root,
+  html.light .bg-background-dark,
+  html.light main {
     background-color: #f8fafc !important;
+    color: #0f172a !important;
+  }
+
+  html.light h1,
+  html.light h2,
+  html.light h3,
+  html.light h4,
+  html.light h5,
+  html.light h6 {
     color: #0f172a !important;
   }
 

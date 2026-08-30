@@ -390,7 +390,7 @@ export function App() {
   }
 
   return (
-    <div className="min-h-screen bg-background-dark text-slate-100 flex flex-col md:flex-row font-sans">
+    <div className="min-h-screen bg-[#080d1a] light:bg-[#f8fafc] text-slate-100 flex flex-col md:flex-row font-sans">
       {/* Desktop Sidebar */}
       <Sidebar
         activeTab={activeTab}
