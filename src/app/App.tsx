@@ -12,6 +12,7 @@ import { ExpenseList } from '../features/expenses/components/ExpenseList';
 import { AddExpenseModal } from '../features/expenses/components/AddExpenseModal';
 import { GroupList } from '../features/groups/components/GroupList';
 import { GroupDetailView } from '../features/groups/components/GroupDetailView';
+import { CreateGroupModal } from '../features/groups/components/CreateGroupModal';
 import { SettleUpModal } from '../features/settlements/components/SettleUpModal';
 import { CopilotChat } from '../features/ai/components/CopilotChat';
 import { MonthlyReportView } from '../features/ai/components/MonthlyReportView';
@@ -116,6 +117,7 @@ export function App() {
 
   // Modals state
   const [isAddExpenseOpen, setIsAddExpenseOpen] = useState(false);
+  const [isCreateGroupOpen, setIsCreateGroupOpen] = useState(false);
   const [isSettleOpen, setIsSettleOpen] = useState(false);
   const [isInstallOpen, setIsInstallOpen] = useState(false);
   const [isScannerOpen, setIsScannerOpen] = useState(false);
@@ -247,6 +249,14 @@ export function App() {
       await deleteExpenseFromFirestore(user.uid, id, target?.groupId);
     }
     showToast('Expense deleted', 'info');
+  };
+
+  const handleSaveGroup = async (newGroup: Group) => {
+    setGroups((prev) => [newGroup, ...prev]);
+    if (env.firebase.isConfigured) {
+      await saveGroupToFirestore(newGroup);
+    }
+    showToast(`Group "${newGroup.name}" created!`, 'success');
   };
 
   const handleConfirmSettlement = async (data: any) => {
@@ -495,7 +505,7 @@ export function App() {
                   <GroupList
                     groups={groups}
                     onSelectGroup={(g) => setSelectedGroup(g)}
-                    onCreateGroup={() => setIsAddExpenseOpen(true)}
+                    onCreateGroup={() => setIsCreateGroupOpen(true)}
                   />
                 )}
               </div>
@@ -572,6 +582,14 @@ export function App() {
         currentUser={{ id: user.uid, name: user.displayName }}
         allParticipants={DEMO_MEMBERS}
         currencySymbol={user.currency === 'INR' ? '₹' : '$'}
+      />
+
+      {/* Create Group Modal */}
+      <CreateGroupModal
+        isOpen={isCreateGroupOpen}
+        onClose={() => setIsCreateGroupOpen(false)}
+        onSaveGroup={handleSaveGroup}
+        currentUser={{ id: user.uid, name: user.displayName }}
       />
 
       {/* Settle Up Modal */}
