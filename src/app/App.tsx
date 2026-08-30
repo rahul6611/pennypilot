@@ -25,6 +25,7 @@ import { PullToRefresh } from '../components/common/PullToRefresh';
 import { subscribeToAuth, logoutUser } from '../features/auth/services/authService';
 import {
   saveExpenseToFirestore,
+  syncExpensesToFirestore,
   deleteExpenseFromFirestore,
   subscribeUserExpenses,
   saveGroupToFirestore,
@@ -283,26 +284,24 @@ export function App() {
   };
 
   const handleRefreshData = async () => {
-    if (!user.isDemoUser && env.firebase.isConfigured && auth.currentUser) {
+    if (env.firebase.isConfigured) {
       try {
-        const freshExp = await getDocs(query(collection(db, 'users', user.uid, 'expenses')));
+        const activeUid = auth.currentUser ? auth.currentUser.uid : user.uid;
+        await syncExpensesToFirestore(activeUid, expenses);
+
+        const freshExp = await getDocs(query(collection(db, 'users', activeUid, 'expenses')));
         const expList: Expense[] = [];
         freshExp.forEach((d) => expList.push(d.data() as Expense));
         expList.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-        setExpenses(expList);
-        localStorage.setItem('pennypilot_expenses', JSON.stringify(expList));
-        showToast('Synced latest data from Firebase!', 'success');
+        if (expList.length > 0) {
+          setExpenses(expList);
+        }
+        showToast('Synced latest data from Firebase DB!', 'success');
       } catch (err) {
         showToast('Data refreshed', 'info');
       }
-    } else if (!user.isDemoUser) {
-      const savedExp = localStorage.getItem('pennypilot_expenses');
-      if (savedExp) {
-        setExpenses(JSON.parse(savedExp));
-      }
-      showToast('Data refreshed!', 'info');
     } else {
-      showToast('Demo data active', 'info');
+      showToast('Data refreshed!', 'info');
     }
   };
 

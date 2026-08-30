@@ -67,6 +67,30 @@ export async function saveExpenseToFirestore(userId: string, expense: Expense): 
   }
 }
 
+export async function syncExpensesToFirestore(userId: string, expenses: Expense[]): Promise<void> {
+  if (!env.firebase.isConfigured || expenses.length === 0) return;
+  const activeUid = auth.currentUser?.uid || userId;
+
+  for (const exp of expenses) {
+    try {
+      const expId = exp.id || `exp-${Date.now()}`;
+      const expenseData = { ...exp, id: expId, userId: activeUid };
+
+      // Write to top-level expenses collection
+      await setDoc(doc(db, 'expenses', expId), expenseData, { merge: true });
+
+      // Write to user subcollection
+      await setDoc(doc(db, 'users', activeUid, 'expenses', expId), expenseData, { merge: true });
+
+      if (exp.groupId) {
+        await setDoc(doc(db, 'groups', exp.groupId, 'expenses', expId), expenseData, { merge: true });
+      }
+    } catch (err) {
+      console.warn(`Could not sync expense ${exp.id} to Firestore:`, err);
+    }
+  }
+}
+
 export async function deleteExpenseFromFirestore(userId: string, expenseId: string, groupId?: string): Promise<void> {
   if (!env.firebase.isConfigured) return;
   const currentUid = auth.currentUser ? auth.currentUser.uid : userId;
