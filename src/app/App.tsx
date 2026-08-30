@@ -367,12 +367,14 @@ export function App() {
         onSuccess={(profile) => {
           setUser(profile);
           setIsLoggedIn(true);
+          setActiveTab('home');
           localStorage.setItem('pennypilot_logged_in', 'true');
           localStorage.setItem('pennypilot_user', JSON.stringify(profile));
           showToast(`Welcome ${profile.displayName}!`, 'success');
         }}
         onContinueGuest={() => {
           setIsLoggedIn(true);
+          setActiveTab('home');
           localStorage.setItem('pennypilot_logged_in', 'true');
           showToast('Continuing in Guest Mode', 'info');
         }}
