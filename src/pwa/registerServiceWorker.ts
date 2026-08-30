@@ -4,10 +4,11 @@ export function setupServiceWorker() {
   if ('serviceWorker' in navigator) {
     const updateSW = registerSW({
       onNeedRefresh() {
-        console.log('New content available, refresh app.');
+        console.log('New PennyPilot build detected. Auto-updating app...');
+        updateSW(true);
       },
       onOfflineReady() {
-        console.log('PennyPilot is ready for offline operation.');
+        console.log('PennyPilot PWA ready for offline usage.');
       }
     });
   }
