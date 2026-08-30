@@ -28,14 +28,38 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             </span>
           )}
           {leftIcon && !prefixSymbol && (
-            <span className="absolute left-4 text-slate-400 pointer-events-none">{leftIcon}</span>
+            <span
+              onClick={(e) => {
+                const container = e.currentTarget.parentElement;
+                const inputEl = container?.querySelector('input');
+                if (inputEl) {
+                  inputEl.focus();
+                  if (props.type === 'date' && 'showPicker' in inputEl) {
+                    try {
+                      (inputEl as any).showPicker();
+                    } catch (err) {}
+                  }
+                }
+              }}
+              className="absolute left-4 text-slate-400 cursor-pointer"
+            >
+              {leftIcon}
+            </span>
           )}
 
           <input
             id={inputId}
             ref={ref}
+            onClick={(e) => {
+              if (props.type === 'date' && 'showPicker' in e.currentTarget) {
+                try {
+                  (e.currentTarget as any).showPicker();
+                } catch (err) {}
+              }
+              if (props.onClick) props.onClick(e);
+            }}
             className={clsx(
-              'w-full bg-slate-950/70 border border-slate-800 rounded-2xl text-slate-100 placeholder-slate-500 text-base min-h-[48px] px-4 py-3 transition-all focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500',
+              'w-full bg-slate-950/70 border border-slate-800 rounded-2xl text-slate-100 placeholder-slate-500 text-base min-h-[48px] px-4 py-3 transition-all focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 cursor-pointer',
               prefixSymbol ? 'pl-10' : leftIcon ? 'pl-11' : 'pl-4',
               rightIcon ? 'pr-11' : 'pr-4',
               error && 'border-rose-500/80 focus:border-rose-500 focus:ring-rose-500',
