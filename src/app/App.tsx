@@ -98,24 +98,21 @@ export function App() {
     const savedUser = localStorage.getItem('pennypilot_user');
     const u = savedUser ? JSON.parse(savedUser) : null;
     if (u?.isDemoUser && localStorage.getItem('pennypilot_explicit_demo')) return DEMO_GROUPS;
-    const saved = localStorage.getItem('pennypilot_groups');
-    return saved ? JSON.parse(saved) : [];
+    return [];
   });
 
   const [expenses, setExpenses] = useState<Expense[]>(() => {
     const savedUser = localStorage.getItem('pennypilot_user');
     const u = savedUser ? JSON.parse(savedUser) : null;
-    if (u?.isDemoUser) return DEMO_EXPENSES;
-    const saved = localStorage.getItem('pennypilot_expenses');
-    return saved ? JSON.parse(saved) : [];
+    if (u?.isDemoUser && localStorage.getItem('pennypilot_explicit_demo')) return DEMO_EXPENSES;
+    return [];
   });
 
   const [settlements, setSettlements] = useState<Settlement[]>(() => {
     const savedUser = localStorage.getItem('pennypilot_user');
     const u = savedUser ? JSON.parse(savedUser) : null;
-    if (u?.isDemoUser) return DEMO_SETTLEMENTS;
-    const saved = localStorage.getItem('pennypilot_settlements');
-    return saved ? JSON.parse(saved) : [];
+    if (u?.isDemoUser && localStorage.getItem('pennypilot_explicit_demo')) return DEMO_SETTLEMENTS;
+    return [];
   });
 
   const [selectedGroup, setSelectedGroup] = useState<Group | null>(null);
@@ -166,18 +163,20 @@ export function App() {
     }
 
     if (env.firebase.isConfigured) {
+      const activeUid = (auth.currentUser && auth.currentUser.uid) ? auth.currentUser.uid : user.uid;
+
       // Real Firebase User - Subscribe to Firebase Cloud Firestore collections
-      const unsubExpenses = subscribeUserExpenses(user.uid, (data) => {
+      const unsubExpenses = subscribeUserExpenses(activeUid, (data) => {
         setExpenses(data);
         localStorage.setItem('pennypilot_expenses', JSON.stringify(data));
       });
 
-      const unsubGroups = subscribeUserGroups(user.uid, (data) => {
+      const unsubGroups = subscribeUserGroups(activeUid, (data) => {
         setGroups(data);
         localStorage.setItem('pennypilot_groups', JSON.stringify(data));
       });
 
-      const unsubSettlements = subscribeUserSettlements(user.uid, (data) => {
+      const unsubSettlements = subscribeUserSettlements(activeUid, (data) => {
         setSettlements(data);
         localStorage.setItem('pennypilot_settlements', JSON.stringify(data));
       });
@@ -204,13 +203,17 @@ export function App() {
   const groupMemberBalances = selectedGroup
     ? calculateGroupBalances(selectedGroup.members, activeGroupExpenses, activeGroupSettlements)
     : [];
+
   const simplifiedDebts = simplifyDebts(groupMemberBalances);
 
-  // Actions
+  // Handlers
   const handleSaveExpense = async (newExpenseData: Partial<Expense>) => {
+    const activeUid = (auth.currentUser && auth.currentUser.uid) ? auth.currentUser.uid : user.uid;
+    const activeName = (auth.currentUser && auth.currentUser.displayName) ? auth.currentUser.displayName : user.displayName;
+
     const created: Expense = {
       id: `exp-${Date.now()}`,
-      userId: user.uid,
+      userId: activeUid,
       description: newExpenseData.description || 'Expense',
       amount: Number(newExpenseData.amount) || 0,
       category: newExpenseData.category || 'other',
@@ -219,26 +222,20 @@ export function App() {
       notes: newExpenseData.notes || '',
       groupId: newExpenseData.groupId,
       groupName: newExpenseData.groupName,
-      paidBy: newExpenseData.paidBy || user.uid,
-      paidByName: newExpenseData.paidByName || user.displayName,
+      paidBy: newExpenseData.paidBy || activeUid,
+      paidByName: newExpenseData.paidByName || activeName,
       splitType: newExpenseData.splitType || 'exact',
       splits: newExpenseData.splits && newExpenseData.splits.length > 0 ? newExpenseData.splits : [
-        { participantId: user.uid, participantName: user.displayName, amount: Number(newExpenseData.amount) || 0 }
+        { participantId: activeUid, participantName: activeName, amount: Number(newExpenseData.amount) || 0 }
       ],
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
 
-    setExpenses((prev) => {
-      const updated = [created, ...prev];
-      if (!user.isDemoUser) {
-        localStorage.setItem('pennypilot_expenses', JSON.stringify(updated));
-      }
-      return updated;
-    });
+    setExpenses((prev) => [created, ...prev]);
 
     if (!user.isDemoUser && env.firebase.isConfigured) {
-      await saveExpenseToFirestore(user.uid, created);
+      await saveExpenseToFirestore(activeUid, created);
     }
 
     showToast(`Expense "${created.description}" saved!`);

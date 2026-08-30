@@ -78,8 +78,10 @@ export function subscribeUserExpenses(userId: string, callback: (expenses: Expen
     return () => {};
   }
 
+  const activeUid = auth.currentUser ? auth.currentUser.uid : userId;
+
   try {
-    const q = query(collection(db, 'users', userId, 'expenses'));
+    const q = query(collection(db, 'users', activeUid, 'expenses'));
     return onSnapshot(
       q,
       (snapshot) => {
@@ -91,7 +93,7 @@ export function subscribeUserExpenses(userId: string, callback: (expenses: Expen
         callback(expensesList);
       },
       (error) => {
-        console.warn(`Firestore user expenses subscription warning for ${userId}:`, error.message);
+        console.warn(`Firestore user expenses subscription warning for ${activeUid}:`, error.message);
       }
     );
   } catch (err) {
@@ -116,6 +118,8 @@ export function subscribeUserGroups(userId: string, callback: (groups: Group[]) 
     return () => {};
   }
 
+  const activeUid = auth.currentUser ? auth.currentUser.uid : userId;
+
   try {
     const q = query(collection(db, 'groups'));
     return onSnapshot(
@@ -124,14 +128,14 @@ export function subscribeUserGroups(userId: string, callback: (groups: Group[]) 
         const groupList: Group[] = [];
         snapshot.forEach((docSnap) => {
           const g = docSnap.data() as Group;
-          if (!g.members || g.members.some((m) => m.id === userId)) {
+          if (!g.members || g.members.some((m) => m.id === activeUid || m.id === userId)) {
             groupList.push(g);
           }
         });
         callback(groupList);
       },
       (error) => {
-        console.warn(`Firestore groups subscription warning for ${userId}:`, error.message);
+        console.warn(`Firestore groups subscription warning for ${activeUid}:`, error.message);
       }
     );
   } catch (err) {
@@ -157,8 +161,10 @@ export function subscribeUserSettlements(userId: string, callback: (settlements:
     return () => {};
   }
 
+  const activeUid = auth.currentUser ? auth.currentUser.uid : userId;
+
   try {
-    const q = query(collection(db, 'users', userId, 'settlements'));
+    const q = query(collection(db, 'users', activeUid, 'settlements'));
     return onSnapshot(
       q,
       (snapshot) => {
@@ -169,7 +175,7 @@ export function subscribeUserSettlements(userId: string, callback: (settlements:
         callback(setList);
       },
       (error) => {
-        console.warn(`Firestore settlements subscription warning for ${userId}:`, error.message);
+        console.warn(`Firestore settlements subscription warning for ${activeUid}:`, error.message);
       }
     );
   } catch (err) {
