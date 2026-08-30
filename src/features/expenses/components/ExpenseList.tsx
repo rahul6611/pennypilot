@@ -64,8 +64,18 @@ export const ExpenseList: React.FC<ExpenseListProps> = ({
 
   // Apply sorting
   const sorted = [...filtered].sort((a, b) => {
-    if (filter.sortBy === 'date-desc') return new Date(b.date).getTime() - new Date(a.date).getTime();
-    if (filter.sortBy === 'date-asc') return new Date(a.date).getTime() - new Date(b.date).getTime();
+    if (filter.sortBy === 'date-desc') {
+      const timeA = new Date(a.createdAt || a.date).getTime();
+      const timeB = new Date(b.createdAt || b.date).getTime();
+      if (timeB !== timeA) return timeB - timeA;
+      return b.id.localeCompare(a.id);
+    }
+    if (filter.sortBy === 'date-asc') {
+      const timeA = new Date(a.createdAt || a.date).getTime();
+      const timeB = new Date(b.createdAt || b.date).getTime();
+      if (timeA !== timeB) return timeA - timeB;
+      return a.id.localeCompare(b.id);
+    }
     if (filter.sortBy === 'amount-desc') return b.amount - a.amount;
     if (filter.sortBy === 'amount-asc') return a.amount - b.amount;
     return 0;

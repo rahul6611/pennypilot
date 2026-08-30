@@ -149,7 +149,12 @@ export function subscribeUserExpenses(userId: string, callback: (expenses: Expen
         snapshot.forEach((docSnap) => {
           expensesList.push(docSnap.data() as Expense);
         });
-        expensesList.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+        expensesList.sort((a, b) => {
+          const timeA = new Date(a.createdAt || a.date).getTime();
+          const timeB = new Date(b.createdAt || b.date).getTime();
+          if (timeB !== timeA) return timeB - timeA;
+          return b.id.localeCompare(a.id);
+        });
         callback(expensesList);
       },
       (error) => {

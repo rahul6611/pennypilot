@@ -76,6 +76,11 @@ export function App() {
   // Navigation tab state
   const [activeTab, setActiveTab] = useState<NavTab>('home');
 
+  // Scroll to top when switching navigation tabs
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+  }, [activeTab]);
+
   // User Auth State & Protected Route
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(() => {
     return localStorage.getItem('pennypilot_logged_in') === 'true';

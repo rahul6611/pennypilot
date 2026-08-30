@@ -130,7 +130,15 @@ export const SpendingOverview: React.FC<SpendingOverviewProps> = ({
           </div>
         ) : (
           <div className="divide-y divide-slate-800/60">
-            {expenses.slice(0, 5).map((expense) => {
+            {[...expenses]
+              .sort((a, b) => {
+                const timeA = new Date(a.createdAt || a.date).getTime();
+                const timeB = new Date(b.createdAt || b.date).getTime();
+                if (timeB !== timeA) return timeB - timeA;
+                return b.id.localeCompare(a.id);
+              })
+              .slice(0, 5)
+              .map((expense) => {
               const catObj = CATEGORIES.find((c) => c.id === expense.category) || CATEGORIES[8];
               const IconComp = iconMap[catObj.icon] || MoreHorizontal;
 
