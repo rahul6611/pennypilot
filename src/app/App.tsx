@@ -21,6 +21,7 @@ import { ProfileView } from '../features/profile/components/ProfileView';
 
 import { AuthModal } from '../features/auth/components/AuthModal';
 import { AuthScreen } from '../features/auth/components/AuthScreen';
+import { PullToRefresh } from '../components/common/PullToRefresh';
 import { subscribeToAuth, logoutUser } from '../features/auth/services/authService';
 import {
   saveExpenseToFirestore,
@@ -396,133 +397,141 @@ export function App() {
         <OfflineBanner isOffline={isOffline} wasOffline={wasOffline} />
 
         <main className="flex-1 max-w-4xl w-full mx-auto p-4 sm:p-6 space-y-6">
-          {/* HOME DASHBOARD TAB */}
-          {activeTab === 'home' && (
-            <div className="space-y-6">
-              <SummaryCards overview={overview} monthlyBudget={user.monthlyBudget} currency={user.currency} />
+          <PullToRefresh onRefresh={handleRefreshData}>
+            {/* HOME DASHBOARD TAB */}
+            {activeTab === 'home' && (
+              <div className="space-y-6">
+                <SummaryCards overview={overview} monthlyBudget={user.monthlyBudget} currency={user.currency} />
 
-              {/* Quick AI & Scanner Banner */}
-              <div className="grid grid-cols-2 gap-3">
-                <button
-                  onClick={() => setIsAddExpenseOpen(true)}
-                  className="p-3.5 rounded-2xl bg-gradient-to-r from-brand-600/30 to-indigo-600/30 border border-brand-500/40 text-left hover:border-brand-400 transition-all flex items-center justify-between group"
-                >
-                  <div>
-                    <span className="text-xs font-bold text-white flex items-center gap-1">
-                      <Sparkles className="w-3.5 h-3.5 text-brand-400" /> AI Natural Entry
-                    </span>
-                    <span className="text-[11px] text-slate-400 block mt-0.5">Type & auto-split</span>
-                  </div>
-                </button>
+                {/* Quick AI & Scanner Banner */}
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    onClick={() => setIsAddExpenseOpen(true)}
+                    className="p-4 rounded-2xl bg-gradient-to-br from-brand-600/30 to-indigo-600/20 border border-brand-500/30 hover:border-brand-500 text-left transition-all group"
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="p-2 rounded-xl bg-brand-500/20 text-brand-300">
+                        <Sparkles className="w-5 h-5" />
+                      </div>
+                    </div>
+                    <h4 className="text-xs font-bold text-slate-100 group-hover:text-brand-300 transition-colors">
+                      AI Natural Entry
+                    </h4>
+                    <p className="text-[11px] text-slate-400">Type & auto-split</p>
+                  </button>
 
-                <button
-                  onClick={() => setIsScannerOpen(true)}
-                  className="p-3.5 rounded-2xl bg-slate-900 border border-slate-800 text-left hover:border-slate-700 transition-all flex items-center justify-between group"
-                >
-                  <div>
-                    <span className="text-xs font-bold text-white flex items-center gap-1">
-                      <Camera className="w-3.5 h-3.5 text-emerald-400" /> Scan Receipt
-                    </span>
-                    <span className="text-[11px] text-slate-400 block mt-0.5">OCR bill parsing</span>
-                  </div>
-                </button>
-              </div>
-
-              <SpendingOverview
-                expenses={expenses}
-                currency={user.currency}
-                onViewAllExpenses={() => setActiveTab('expenses')}
-                onSelectExpense={() => {}}
-                onOpenAddExpense={() => setIsAddExpenseOpen(true)}
-              />
-            </div>
-          )}
-
-          {/* EXPENSES TAB */}
-          {activeTab === 'expenses' && (
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h2 className="text-lg font-bold text-slate-100">All Expenses</h2>
-                  <p className="text-xs text-slate-400">{expenses.length} total transactions logged</p>
+                  <button
+                    onClick={() => setIsScannerOpen(true)}
+                    className="p-4 rounded-2xl bg-slate-900/80 border border-slate-800 hover:border-emerald-500/40 text-left transition-all group"
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="p-2 rounded-xl bg-emerald-500/20 text-emerald-400">
+                        <Camera className="w-5 h-5" />
+                      </div>
+                    </div>
+                    <h4 className="text-xs font-bold text-slate-100 group-hover:text-emerald-300 transition-colors">
+                      Scan Receipt
+                    </h4>
+                    <p className="text-[11px] text-slate-400">OCR bill parsing</p>
+                  </button>
                 </div>
-              </div>
 
-              <ExpenseList
-                expenses={expenses}
-                groups={groups}
-                currency={user.currency}
-                onDeleteExpense={handleDeleteExpense}
-              />
-            </div>
-          )}
-
-          {/* GROUPS TAB */}
-          {activeTab === 'groups' && (
-            <div>
-              {selectedGroup ? (
-                <GroupDetailView
-                  group={selectedGroup}
+                <SpendingOverview
                   expenses={expenses}
-                  settlements={settlements}
-                  memberBalances={groupMemberBalances}
-                  simplifiedDebts={simplifiedDebts}
                   currency={user.currency}
-                  currentUserId={user.uid}
-                  onBack={() => setSelectedGroup(null)}
+                  onViewAllExpenses={() => setActiveTab('expenses')}
+                  onSelectExpense={() => setActiveTab('expenses')}
                   onOpenAddExpense={() => setIsAddExpenseOpen(true)}
-                  onOpenSettleUp={(debt) => {
-                    setActiveDebtToSettle(debt);
-                    setIsSettleOpen(true);
-                  }}
                 />
-              ) : (
-                <GroupList
+              </div>
+            )}
+
+            {/* EXPENSES TAB */}
+            {activeTab === 'expenses' && (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="text-lg font-bold text-slate-100">All Expenses</h2>
+                    <p className="text-xs text-slate-400">{expenses.length} total transactions logged</p>
+                  </div>
+                </div>
+
+                <ExpenseList
+                  expenses={expenses}
                   groups={groups}
-                  onSelectGroup={(g) => setSelectedGroup(g)}
-                  onCreateGroup={() => setIsAddExpenseOpen(true)}
+                  currency={user.currency}
+                  onDeleteExpense={handleDeleteExpense}
                 />
-              )}
-            </div>
-          )}
+              </div>
+            )}
 
-          {/* SPENDING CHARTS & INSIGHTS TAB */}
-          {activeTab === 'analytics' && (
-            <div className="space-y-6">
-              <AnalyticsView expenses={expenses} monthlyBudget={user.monthlyBudget} currency={user.currency} />
+            {/* GROUPS TAB */}
+            {activeTab === 'groups' && (
+              <div>
+                {selectedGroup ? (
+                  <GroupDetailView
+                    group={selectedGroup}
+                    expenses={expenses}
+                    settlements={settlements}
+                    memberBalances={groupMemberBalances}
+                    simplifiedDebts={simplifiedDebts}
+                    currency={user.currency}
+                    currentUserId={user.uid}
+                    onBack={() => setSelectedGroup(null)}
+                    onOpenAddExpense={() => setIsAddExpenseOpen(true)}
+                    onOpenSettleUp={(debt) => {
+                      setActiveDebtToSettle(debt);
+                      setIsSettleOpen(true);
+                    }}
+                  />
+                ) : (
+                  <GroupList
+                    groups={groups}
+                    onSelectGroup={(g) => setSelectedGroup(g)}
+                    onCreateGroup={() => setIsAddExpenseOpen(true)}
+                  />
+                )}
+              </div>
+            )}
 
-              <MonthlyReportView expenses={expenses} userBudget={user.monthlyBudget} currency={user.currency} />
+            {/* SPENDING CHARTS & INSIGHTS TAB */}
+            {activeTab === 'analytics' && (
+              <div className="space-y-6">
+                <AnalyticsView expenses={expenses} monthlyBudget={user.monthlyBudget} currency={user.currency} />
 
-              <CopilotChat
-                expenses={expenses}
-                userBudget={user.monthlyBudget}
-                currentUser={{ id: user.uid, name: user.displayName }}
-                currency={user.currency}
+                <MonthlyReportView expenses={expenses} userBudget={user.monthlyBudget} currency={user.currency} />
+
+                <CopilotChat
+                  expenses={expenses}
+                  userBudget={user.monthlyBudget}
+                  currentUser={{ id: user.uid, name: user.displayName }}
+                  currency={user.currency}
+                />
+
+                <RecurringList items={recurringItems} currency={user.currency} />
+              </div>
+            )}
+
+            {/* PROFILE TAB */}
+            {activeTab === 'profile' && (
+              <ProfileView
+                user={user}
+                onUpdateCurrency={async (curr) => {
+                  const updated = { ...user, currency: curr };
+                  setUser(updated);
+                  await saveUserProfile(updated);
+                }}
+                onUpdateBudget={async (b) => {
+                  const updated = { ...user, monthlyBudget: b };
+                  setUser(updated);
+                  await saveUserProfile(updated);
+                }}
+                onDeleteAccount={handleDeleteAccount}
+                onResetDemoData={handleResetDemoData}
+                onClearData={handleClearData}
               />
-
-              <RecurringList items={recurringItems} currency={user.currency} />
-            </div>
-          )}
-
-          {/* PROFILE TAB */}
-          {activeTab === 'profile' && (
-            <ProfileView
-              user={user}
-              onUpdateCurrency={async (curr) => {
-                const updated = { ...user, currency: curr };
-                setUser(updated);
-                await saveUserProfile(updated);
-              }}
-              onUpdateBudget={async (b) => {
-                const updated = { ...user, monthlyBudget: b };
-                setUser(updated);
-                await saveUserProfile(updated);
-              }}
-              onDeleteAccount={handleDeleteAccount}
-              onResetDemoData={handleResetDemoData}
-              onClearData={handleClearData}
-            />
-          )}
+            )}
+          </PullToRefresh>
         </main>
       </div>
 
