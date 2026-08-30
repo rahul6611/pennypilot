@@ -16,32 +16,85 @@
     -webkit-tap-highlight-color: transparent;
   }
 
-  html.light body {
-    background-color: #f1f5f9 !important;
+  /* Complete Clean Light Mode Overrides */
+  html.light,
+  html.light body,
+  html.light #root {
+    background-color: #f8fafc !important;
     color: #0f172a !important;
   }
 
-  html.light .bg-slate-950 {
-    background-color: #f8fafc !important;
+  html.light header,
+  html.light aside {
+    background-color: #ffffff !important;
+    border-color: #e2e8f0 !important;
   }
 
-  html.light .bg-slate-900 {
+  html.light .bg-[#080d1a],
+  html.light .bg-slate-950,
+  html.light .bg-slate-950\/90,
+  html.light .bg-slate-950\/80,
+  html.light .bg-slate-950\/70,
+  html.light .bg-slate-950\/60 {
     background-color: #ffffff !important;
-    border-color: #cbd5e1 !important;
+    border-color: #e2e8f0 !important;
+  }
+
+  html.light .bg-slate-900,
+  html.light .bg-slate-900\/90,
+  html.light .bg-slate-900\/80,
+  html.light .bg-slate-900\/70,
+  html.light .bg-slate-900\/60 {
+    background-color: #ffffff !important;
+    border-color: #e2e8f0 !important;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.04), 0 2px 4px -2px rgba(0, 0, 0, 0.04);
   }
 
   html.light .text-slate-100,
+  html.light .text-slate-200,
   html.light .text-white {
     color: #0f172a !important;
   }
 
   html.light .text-slate-300,
-  html.light .text-slate-400 {
+  html.light .text-slate-400,
+  html.light .text-slate-500 {
     color: #475569 !important;
   }
 
-  html.light .border-slate-800 {
+  html.light .border-slate-800,
+  html.light .border-slate-800\/80,
+  html.light .border-slate-800\/60 {
     border-color: #e2e8f0 !important;
+  }
+
+  html.light input,
+  html.light select,
+  html.light textarea {
+    background-color: #ffffff !important;
+    color: #0f172a !important;
+    border-color: #cbd5e1 !important;
+  }
+
+  html.light input::placeholder,
+  html.light textarea::placeholder {
+    color: #94a3b8 !important;
+  }
+
+  html.light .bg-slate-800 {
+    background-color: #f1f5f9 !important;
+    color: #0f172a !important;
+  }
+
+  /* Keep gradient brand texts crisp dark in light mode */
+  html.light .from-white {
+    --tw-gradient-from: #0f172a var(--tw-gradient-from-position) !important;
+  }
+  html.light .via-slate-100 {
+    --tw-gradient-via: #1e293b var(--tw-gradient-via-position) !important;
+  }
+  html.light .to-slate-400 {
+    --tw-gradient-to: #475569 var(--tw-gradient-to-position) !important;
   }
 }
 
