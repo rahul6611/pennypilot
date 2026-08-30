@@ -17,12 +17,32 @@ import { Group } from '../types/group';
 import { Settlement } from '../types/settlement';
 import { UserProfile } from '../types/user';
 
+// Utility to strip undefined properties before saving to Firebase Firestore
+function sanitizeFirestoreData<T extends Record<string, any>>(obj: T): Record<string, any> {
+  const sanitized: Record<string, any> = {};
+  Object.keys(obj).forEach((key) => {
+    const value = obj[key];
+    if (value !== undefined) {
+      if (value && typeof value === 'object' && !Array.isArray(value) && !(value instanceof Date)) {
+        sanitized[key] = sanitizeFirestoreData(value);
+      } else if (Array.isArray(value)) {
+        sanitized[key] = value.map((item) =>
+          item && typeof item === 'object' ? sanitizeFirestoreData(item) : item
+        );
+      } else {
+        sanitized[key] = value;
+      }
+    }
+  });
+  return sanitized;
+}
+
 // Users Firestore Methods
 export async function saveUserProfile(user: UserProfile): Promise<void> {
   if (!env.firebase.isConfigured || user.isDemoUser || !auth.currentUser) return;
   try {
     const userRef = doc(db, 'users', user.uid);
-    await setDoc(userRef, user, { merge: true });
+    await setDoc(userRef, sanitizeFirestoreData(user), { merge: true });
   } catch (err) {
     console.warn('Could not save user profile to Firestore:', err);
   }
@@ -46,20 +66,21 @@ export async function saveExpenseToFirestore(userId: string, expense: Expense): 
   const expId = expense.id || `exp-${Date.now()}`;
 
   try {
-    const expenseData = { ...expense, id: expId, userId: activeUid };
+    const rawData = { ...expense, id: expId, userId: activeUid };
+    const expenseData = sanitizeFirestoreData(rawData);
 
     // 1. Save to top-level expenses collection (visible immediately in Firebase Console)
     const globalExpRef = doc(db, 'expenses', expId);
-    await setDoc(globalExpRef, expenseData);
+    await setDoc(globalExpRef, expenseData, { merge: true });
 
     // 2. Save to user subcollection
     const expRef = doc(db, 'users', activeUid, 'expenses', expId);
-    await setDoc(expRef, expenseData);
+    await setDoc(expRef, expenseData, { merge: true });
 
     // 3. Sync to group subcollection if applicable
     if (expense.groupId) {
       const groupExpRef = doc(db, 'groups', expense.groupId, 'expenses', expId);
-      await setDoc(groupExpRef, expenseData);
+      await setDoc(groupExpRef, expenseData, { merge: true });
     }
     console.log('Successfully saved expense to Firebase Firestore:', expId);
   } catch (err) {
@@ -74,7 +95,8 @@ export async function syncExpensesToFirestore(userId: string, expenses: Expense[
   for (const exp of expenses) {
     try {
       const expId = exp.id || `exp-${Date.now()}`;
-      const expenseData = { ...exp, id: expId, userId: activeUid };
+      const rawData = { ...exp, id: expId, userId: activeUid };
+      const expenseData = sanitizeFirestoreData(rawData);
 
       // Write to top-level expenses collection
       await setDoc(doc(db, 'expenses', expId), expenseData, { merge: true });
