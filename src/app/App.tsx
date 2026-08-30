@@ -101,26 +101,16 @@ export function App() {
     return DEFAULT_USER;
   });
 
-  const [groups, setGroups] = useState<Group[]>(() => {
-    const savedUser = localStorage.getItem('pennypilot_user');
-    const u = savedUser ? JSON.parse(savedUser) : null;
-    if (u?.isDemoUser && localStorage.getItem('pennypilot_explicit_demo')) return DEMO_GROUPS;
-    return [];
-  });
+  const [groups, setGroups] = useState<Group[]>([]);
+  const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [settlements, setSettlements] = useState<Settlement[]>([]);
 
-  const [expenses, setExpenses] = useState<Expense[]>(() => {
-    const savedUser = localStorage.getItem('pennypilot_user');
-    const u = savedUser ? JSON.parse(savedUser) : null;
-    if (u?.isDemoUser && localStorage.getItem('pennypilot_explicit_demo')) return DEMO_EXPENSES;
-    return [];
-  });
-
-  const [settlements, setSettlements] = useState<Settlement[]>(() => {
-    const savedUser = localStorage.getItem('pennypilot_user');
-    const u = savedUser ? JSON.parse(savedUser) : null;
-    if (u?.isDemoUser && localStorage.getItem('pennypilot_explicit_demo')) return DEMO_SETTLEMENTS;
-    return [];
-  });
+  // Clear any legacy local storage expense caches so data ONLY comes from Firebase
+  useEffect(() => {
+    localStorage.removeItem('pennypilot_expenses');
+    localStorage.removeItem('pennypilot_groups');
+    localStorage.removeItem('pennypilot_settlements');
+  }, []);
 
   const [selectedGroup, setSelectedGroup] = useState<Group | null>(null);
 
@@ -179,17 +169,14 @@ export function App() {
       // Real Firebase User - Subscribe to Firebase Cloud Firestore collections
       const unsubExpenses = subscribeUserExpenses(activeUid, (data) => {
         setExpenses(data);
-        localStorage.setItem('pennypilot_expenses', JSON.stringify(data));
       });
 
       const unsubGroups = subscribeUserGroups(activeUid, (data) => {
         setGroups(data);
-        localStorage.setItem('pennypilot_groups', JSON.stringify(data));
       });
 
       const unsubSettlements = subscribeUserSettlements(activeUid, (data) => {
         setSettlements(data);
-        localStorage.setItem('pennypilot_settlements', JSON.stringify(data));
       });
 
       return () => {
