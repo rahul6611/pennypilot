@@ -5,8 +5,9 @@ import { Input } from '../../../components/common/Input';
 import { Modal } from '../../../components/common/Modal';
 import { CURRENCIES } from '../../../config/constants';
 import { UserProfile } from '../../../types/user';
-import { User, Shield, CreditCard, Trash2, LogOut, Sparkles, AlertTriangle, Moon, Sun, Laptop, Palette } from 'lucide-react';
+import { User, Shield, CreditCard, Trash2, LogOut, Sparkles, AlertTriangle, Moon, Sun, Laptop, Palette, RefreshCw } from 'lucide-react';
 import { getStoredTheme, applyThemeMode, ThemeMode } from '../../../utils/themeService';
+import { forceCheckAppUpdate } from '../../../pwa/registerServiceWorker';
 
 export interface ProfileViewProps {
   user: UserProfile;
@@ -30,6 +31,12 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
   const [budgetInput, setBudgetInput] = useState(user.monthlyBudget.toString());
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [themeMode, setThemeMode] = useState<ThemeMode>(() => getStoredTheme());
+  const [isUpdating, setIsUpdating] = useState(false);
+
+  const handleCheckUpdate = async () => {
+    setIsUpdating(true);
+    await forceCheckAppUpdate();
+  };
 
   const handleThemeChange = (mode: ThemeMode) => {
     setThemeMode(mode);
@@ -147,6 +154,28 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
             </Button>
           </form>
         </div>
+      </Card>
+
+      {/* App Version & Force PWA Update */}
+      <Card variant="glass" className="space-y-3 border-slate-800">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-sm font-bold text-slate-100 flex items-center gap-2">
+              <RefreshCw className="w-4 h-4 text-emerald-400" /> App Updates & PWA Version
+            </h3>
+            <p className="text-xs text-slate-400 mt-0.5">PennyPilot 2026 Edition • Build v1.0.4</p>
+          </div>
+        </div>
+
+        <Button
+          variant="outline"
+          className="w-full text-xs justify-center border-emerald-500/40 text-emerald-300 hover:bg-emerald-500/20 hover:text-white"
+          leftIcon={<RefreshCw className={`w-4 h-4 ${isUpdating ? 'animate-spin' : ''}`} />}
+          isLoading={isUpdating}
+          onClick={handleCheckUpdate}
+        >
+          {isUpdating ? 'Checking for Latest Updates...' : 'Check & Install Latest PWA Update'}
+        </Button>
       </Card>
 
       {/* Reset & Privacy Actions */}
