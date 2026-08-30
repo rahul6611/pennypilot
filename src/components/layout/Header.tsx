@@ -12,6 +12,7 @@ export interface HeaderProps {
   currency: string;
   user: UserProfile;
   onOpenAuthModal: () => void;
+  onOpenProfile: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -22,7 +23,8 @@ export const Header: React.FC<HeaderProps> = ({
   onRefreshData,
   currency,
   user,
-  onOpenAuthModal
+  onOpenAuthModal,
+  onOpenProfile
 }) => {
   return (
     <header className="sticky top-0 z-30 bg-slate-950/90 backdrop-blur-xl border-b border-slate-800/80 px-4 pt-safe pb-3">
@@ -84,19 +86,20 @@ export const Header: React.FC<HeaderProps> = ({
             </button>
           )}
 
-          {/* User Auth Pill Button */}
+          {/* User Auth / Profile Pill Button */}
           <button
-            onClick={onOpenAuthModal}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-900 border border-slate-800 text-slate-200 text-xs font-semibold hover:border-brand-500/40 transition-colors"
+            onClick={onOpenProfile}
+            className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-900 border border-slate-800 text-slate-200 text-xs font-semibold hover:border-brand-500/50 hover:bg-slate-800/80 active:scale-95 transition-all shadow-sm"
+            title="View Profile Settings"
           >
             {user.photoURL ? (
-              <img src={user.photoURL} alt={user.displayName} className="w-5 h-5 rounded-full" />
+              <img src={user.photoURL} alt={user.displayName} className="w-5 h-5 rounded-full object-cover" />
             ) : (
               <div className="w-5 h-5 rounded-full bg-brand-600 text-white text-[10px] font-bold flex items-center justify-center">
-                {user.displayName.charAt(0)}
+                {user.displayName ? user.displayName.charAt(0).toUpperCase() : 'U'}
               </div>
             )}
-            <span className="max-w-[80px] truncate hidden sm:inline">{user.displayName}</span>
+            <span className="max-w-[100px] truncate">{user.displayName || 'Account'}</span>
           </button>
         </div>
       </div>

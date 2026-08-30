@@ -390,6 +390,7 @@ export function App() {
           currency={user.currency}
           user={user}
           onOpenAuthModal={() => setIsAuthModalOpen(true)}
+          onOpenProfile={() => setActiveTab('profile')}
         />
 
         <OfflineBanner isOffline={isOffline} wasOffline={wasOffline} />
