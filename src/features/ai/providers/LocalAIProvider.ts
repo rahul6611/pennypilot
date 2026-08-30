@@ -20,41 +20,58 @@ export class LocalAIProvider implements AIProvider {
     const cleaned = text.trim();
     const todayISO = new Date().toISOString().split('T')[0];
 
-    // 1. Extract Amount (e.g., 850, ₹1200, 2,840)
-    const amountMatch = cleaned.match(/(?:₹|\$|INR)?\s*([0-9]+(?:,[0-9]+)*(?:\.[0-9]{1,2})?)/i);
-    const amount = amountMatch ? parseFloat(amountMatch[1].replace(/,/g, '')) : 0;
+    // 1. Extract ALL Amounts in text and sum them up (e.g. "dinner 300, chocolate 200" -> 300 + 200 = 500)
+    const numberMatches = Array.from(cleaned.matchAll(/(?:₹|\$|INR)?\s*([0-9]+(?:,[0-9]+)*(?:\.[0-9]{1,2})?)/gi));
+    const numbers = numberMatches
+      .map((m) => parseFloat(m[1].replace(/,/g, '')))
+      .filter((n) => !isNaN(n) && n > 0);
+
+    const amount = numbers.length > 0 ? numbers.reduce((sum, val) => sum + val, 0) : 0;
 
     // 2. Extract Category & Merchant
     let category = 'other';
-    let merchant = 'Expense';
+    let merchant = '';
 
     const lower = cleaned.toLowerCase();
-    if (lower.includes('dinner') || lower.includes('lunch') || lower.includes('food') || lower.includes('restaurant') || lower.includes('swiggy') || lower.includes('zomato') || lower.includes('honest') || lower.includes('pizza')) {
+
+    // Clean out numbers, currency codes, and filler words to extract actual text description
+    const textWithoutNumbers = cleaned
+      .replace(/(?:₹|\$|INR)/gi, '')
+      .replace(/[0-9]+(?:,[0-9]+)*(?:\.[0-9]{1,2})?/g, '')
+      .replace(/[.,;/\\_-]+/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+    if (textWithoutNumbers.length > 1) {
+      const words = textWithoutNumbers
+        .split(/\s+/)
+        .filter((w) => w.length > 0 && !['me', 'and', 'with', 'at', 'mai', 'in', 'for', 'split', 'half'].includes(w.toLowerCase()));
+
+      if (words.length > 0) {
+        merchant = words
+          .slice(0, 4)
+          .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+          .join(' ');
+      }
+    }
+
+    if (lower.includes('dinner') || lower.includes('lunch') || lower.includes('food') || lower.includes('restaurant') || lower.includes('swiggy') || lower.includes('zomato') || lower.includes('honest') || lower.includes('pizza') || lower.includes('choc') || lower.includes('hotel') || lower.includes('hotem')) {
       category = 'food';
-      if (lower.includes('honest')) merchant = 'Honest Restaurant';
-      else if (lower.includes('pizza')) merchant = 'Domino\'s Pizza';
-      else if (lower.includes('swiggy')) merchant = 'Swiggy';
-      else merchant = 'Food & Dining';
+      if (!merchant) merchant = 'Food & Dining';
     } else if (lower.includes('uber') || lower.includes('ola') || lower.includes('cab') || lower.includes('flight') || lower.includes('petrol') || lower.includes('fuel') || lower.includes('auto')) {
       category = 'transport';
-      if (lower.includes('uber')) merchant = 'Uber';
-      else if (lower.includes('ola')) merchant = 'Ola Cabs';
-      else merchant = 'Transport';
+      if (!merchant) merchant = 'Transport';
     } else if (lower.includes('groceries') || lower.includes('d-mart') || lower.includes('dmart') || lower.includes('zepto') || lower.includes('blinkit')) {
       category = 'groceries';
-      merchant = lower.includes('zepto') ? 'Zepto' : lower.includes('dmart') ? 'D-Mart' : 'Groceries';
+      if (!merchant) merchant = 'Groceries';
     } else if (lower.includes('movie') || lower.includes('netflix') || lower.includes('bowling') || lower.includes('concert')) {
       category = 'entertainment';
-      merchant = lower.includes('netflix') ? 'Netflix' : 'Movie / Entertainment';
+      if (!merchant) merchant = 'Entertainment';
     } else if (lower.includes('electricity') || lower.includes('rent') || lower.includes('wifi') || lower.includes('bill')) {
       category = 'bills';
-      merchant = lower.includes('wifi') ? 'Airtel Wi-Fi' : lower.includes('rent') ? 'House Rent' : 'Utility Bill';
+      if (!merchant) merchant = 'Utility Bill';
     } else {
-      // First words as merchant description if available
-      const words = cleaned.split(' ').filter(w => !w.match(/^[0-9]+$/));
-      if (words.length > 0) {
-        merchant = words[0] + (words[1] ? ' ' + words[1] : '');
-      }
+      if (!merchant) merchant = 'Expense';
     }
 
     // 3. Extract Participants
