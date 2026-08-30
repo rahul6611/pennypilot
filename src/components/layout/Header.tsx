@@ -25,7 +25,7 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenAuthModal
 }) => {
   return (
-    <header className="sticky top-0 z-30 bg-slate-950/80 backdrop-blur-xl border-b border-slate-800/80 px-4 py-3">
+    <header className="sticky top-0 z-30 bg-slate-950/90 backdrop-blur-xl border-b border-slate-800/80 px-4 pt-safe pb-3">
       <div className="flex items-center justify-between max-w-7xl mx-auto">
         {/* Left Mobile Brand */}
         <div className="flex items-center gap-2.5 md:hidden">

@@ -17,8 +17,12 @@
   }
 }
 
+.pt-safe {
+  padding-top: calc(0.75rem + env(safe-area-inset-top, 0px));
+}
+
 .pb-safe {
-  padding-bottom: calc(0.5rem + var(--sab, 0px));
+  padding-bottom: calc(0.5rem + env(safe-area-inset-bottom, 0px));
 }
 
 /* Custom scrollbars */

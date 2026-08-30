@@ -20,6 +20,7 @@ import { RecurringList } from '../features/recurring/components/RecurringList';
 import { ProfileView } from '../features/profile/components/ProfileView';
 
 import { AuthModal } from '../features/auth/components/AuthModal';
+import { AuthScreen } from '../features/auth/components/AuthScreen';
 import { subscribeToAuth, logoutUser } from '../features/auth/services/authService';
 import {
   saveExpenseToFirestore,
@@ -73,7 +74,11 @@ export function App() {
   // Navigation tab state
   const [activeTab, setActiveTab] = useState<NavTab>('home');
 
-  // User Auth State
+  // User Auth State & Protected Route
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(() => {
+    return localStorage.getItem('pennypilot_logged_in') === 'true';
+  });
+
   const [user, setUser] = useState<UserProfile>(() => {
     const saved = localStorage.getItem('pennypilot_user');
     if (saved) {
@@ -141,6 +146,8 @@ export function App() {
       if (authProfile) {
         // Authenticated real user
         setUser(authProfile);
+        setIsLoggedIn(true);
+        localStorage.setItem('pennypilot_logged_in', 'true');
         localStorage.setItem('pennypilot_user', JSON.stringify(authProfile));
         showToast(`Signed in as ${authProfile.displayName}`, 'success');
       }
@@ -341,8 +348,28 @@ export function App() {
     setExpenses([]);
     setGroups([]);
     setSettlements([]);
+    setIsLoggedIn(false);
     showToast('Signed out & local state cleared.', 'warning');
   };
+
+  if (!isLoggedIn) {
+    return (
+      <AuthScreen
+        onSuccess={(profile) => {
+          setUser(profile);
+          setIsLoggedIn(true);
+          localStorage.setItem('pennypilot_logged_in', 'true');
+          localStorage.setItem('pennypilot_user', JSON.stringify(profile));
+          showToast(`Welcome ${profile.displayName}!`, 'success');
+        }}
+        onContinueGuest={() => {
+          setIsLoggedIn(true);
+          localStorage.setItem('pennypilot_logged_in', 'true');
+          showToast('Continuing in Guest Mode', 'info');
+        }}
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background-dark text-slate-100 flex flex-col md:flex-row font-sans">
