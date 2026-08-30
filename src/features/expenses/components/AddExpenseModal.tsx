@@ -46,6 +46,11 @@ export const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
   const [isParsing, setIsParsing] = useState(false);
   const [aiParsePreview, setAiParsePreview] = useState<string | null>(null);
 
+  // Split Strategy custom inputs state
+  const [customExacts, setCustomExacts] = useState<Record<string, number>>({});
+  const [customPercentages, setCustomPercentages] = useState<Record<string, number>>({});
+  const [customShares, setCustomShares] = useState<Record<string, number>>({});
+
   // Group members if group selected, otherwise personal currentUser
   const activeGroup = groups.find((g) => g.id === selectedGroupId);
   const currentParticipants = selectedGroupId && activeGroup
@@ -83,7 +88,10 @@ export const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
     const calculatedSplits = calculateSplits({
       totalAmount: parsedAmount,
       participants: currentParticipants,
-      splitType
+      splitType,
+      customExacts,
+      customPercentages,
+      customShares
     });
 
     onSaveExpense({
@@ -294,13 +302,95 @@ export const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
               </div>
             </div>
 
-            {/* Split breakdown info */}
+            {/* Interactive Split Breakdown Inputs */}
             {currentParticipants.length > 1 && (
-              <div className="pt-2 text-xs text-slate-400 border-t border-slate-800/80">
-                <p>
-                  Splitting {currencySymbol}
-                  {amount || '0'} across {currentParticipants.length} people ({currentParticipants.map((p) => p.name).join(', ')})
-                </p>
+              <div className="pt-2 text-xs text-slate-300 border-t border-slate-800/80 space-y-2">
+                {splitType === 'equal' && (
+                  <p className="text-slate-400">
+                    Splitting {currencySymbol}
+                    {amount || '0'} equally across {currentParticipants.length} people ({currencySymbol}
+                    {(parseFloat(amount || '0') / currentParticipants.length).toFixed(2)} each).
+                  </p>
+                )}
+
+                {splitType === 'exact' && (
+                  <div className="space-y-1.5 pt-1">
+                    <span className="block text-[11px] font-semibold text-brand-300">Enter custom amount for each person ({currencySymbol}):</span>
+                    {currentParticipants.map((p) => (
+                      <div key={p.id} className="flex items-center justify-between gap-2">
+                        <span className="text-xs text-slate-300 truncate">{p.name}</span>
+                        <input
+                          type="number"
+                          step="0.01"
+                          placeholder="0.00"
+                          value={customExacts[p.id] ?? ''}
+                          onChange={(e) =>
+                            setCustomExacts((prev) => ({
+                              ...prev,
+                              [p.id]: parseFloat(e.target.value) || 0
+                            }))
+                          }
+                          className="w-24 bg-slate-900 border border-slate-800 rounded-lg text-xs text-right p-1.5 focus:border-brand-500 focus:outline-none"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {splitType === 'percentage' && (
+                  <div className="space-y-1.5 pt-1">
+                    <span className="block text-[11px] font-semibold text-brand-300">Enter percentage share for each person (%):</span>
+                    {currentParticipants.map((p) => (
+                      <div key={p.id} className="flex items-center justify-between gap-2">
+                        <span className="text-xs text-slate-300 truncate">{p.name}</span>
+                        <div className="flex items-center gap-1">
+                          <input
+                            type="number"
+                            placeholder="0"
+                            value={customPercentages[p.id] ?? ''}
+                            onChange={(e) =>
+                              setCustomPercentages((prev) => ({
+                                ...prev,
+                                [p.id]: parseFloat(e.target.value) || 0
+                              }))
+                            }
+                            className="w-20 bg-slate-900 border border-slate-800 rounded-lg text-xs text-right p-1.5 focus:border-brand-500 focus:outline-none"
+                          />
+                          <span className="text-slate-400 text-xs">%</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {splitType === 'shares' && (
+                  <div className="space-y-1.5 pt-1">
+                    <span className="block text-[11px] font-semibold text-brand-300">Enter share parts for each person (e.g. 1, 2):</span>
+                    {currentParticipants.map((p) => (
+                      <div key={p.id} className="flex items-center justify-between gap-2">
+                        <span className="text-xs text-slate-300 truncate">{p.name}</span>
+                        <input
+                          type="number"
+                          placeholder="1"
+                          value={customShares[p.id] ?? 1}
+                          onChange={(e) =>
+                            setCustomShares((prev) => ({
+                              ...prev,
+                              [p.id]: parseInt(e.target.value, 10) || 1
+                            }))
+                          }
+                          className="w-20 bg-slate-900 border border-slate-800 rounded-lg text-xs text-right p-1.5 focus:border-brand-500 focus:outline-none"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {splitType === 'itemized' && (
+                  <p className="text-slate-400 text-[11px]">
+                    Itemized split divides total amount evenly across selected items per person.
+                  </p>
+                )}
               </div>
             )}
           </div>

@@ -26,9 +26,9 @@ export const CURRENCIES = [
 ] as const;
 
 export const SPLIT_TYPES = [
-  { id: 'equal', label: 'Equal (1/N)', description: 'Split evenly across members' },
-  { id: 'exact', label: 'Exact Amounts', description: 'Specify exact monetary amount per person' },
-  { id: 'percentage', label: 'Percentage (%)', description: 'Split by fixed percentage ratios' },
-  { id: 'shares', label: 'Shares (Ratio)', description: 'Split by relative share counts' },
-  { id: 'itemized', label: 'Item-by-Item', description: 'Assign specific items + tax/tip proportionally' }
+  { id: 'equal', label: 'Split Equally', description: 'Divide expense equally among all members' },
+  { id: 'exact', label: 'Custom Amounts', description: 'Enter exact monetary amount per person' },
+  { id: 'percentage', label: 'By Percentage (%)', description: 'Split by percentage share per person' },
+  { id: 'shares', label: 'By Parts / Shares', description: 'Split by number of parts per person' },
+  { id: 'itemized', label: 'By Items', description: 'Assign specific items to specific people' }
 ] as const;
