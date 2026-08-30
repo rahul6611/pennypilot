@@ -103,18 +103,6 @@ export const Header: React.FC<HeaderProps> = ({
             )}
             <span className="max-w-[100px] truncate">{user.displayName || 'Account'}</span>
           </button>
-
-          {/* Logout Button */}
-          {onLogout && (
-            <button
-              onClick={onLogout}
-              className="p-2 rounded-2xl text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 border border-rose-500/20 transition-all flex items-center gap-1.5 text-xs font-semibold px-3"
-              title="Log Out"
-            >
-              <LogIn className="w-4 h-4 rotate-180" />
-              <span className="hidden sm:inline">Log Out</span>
-            </button>
-          )}
         </div>
       </div>
     </header>

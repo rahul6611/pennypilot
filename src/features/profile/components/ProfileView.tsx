@@ -45,35 +45,21 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
       </div>
 
       {/* User Card */}
-      <Card variant="glow" className="flex items-center justify-between gap-4 bg-slate-900">
-        <div className="flex items-center gap-4">
-          <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-brand-600 to-emerald-400 font-bold text-xl text-white flex items-center justify-center shadow-lg">
-            {user.displayName ? user.displayName.charAt(0).toUpperCase() : 'U'}
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h3 className="text-base font-extrabold text-white">{user.displayName}</h3>
-              {user.isDemoUser && (
-                <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-brand-500/20 text-brand-300">
-                  Demo Account
-                </span>
-              )}
-            </div>
-            <p className="text-xs text-slate-400 mt-0.5">{user.email || 'guest@pennypilot.app'}</p>
-          </div>
+      <Card variant="glow" className="flex items-center gap-4 bg-slate-900">
+        <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-brand-600 to-emerald-400 font-bold text-xl text-white flex items-center justify-center shadow-lg">
+          {user.displayName ? user.displayName.charAt(0).toUpperCase() : 'U'}
         </div>
-
-        {onLogout && (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={onLogout}
-            className="border-rose-500/30 text-rose-400 hover:bg-rose-500/20 hover:text-white"
-            leftIcon={<LogOut className="w-3.5 h-3.5" />}
-          >
-            Log Out
-          </Button>
-        )}
+        <div className="flex-1">
+          <div className="flex items-center gap-2">
+            <h3 className="text-base font-extrabold text-white">{user.displayName}</h3>
+            {user.isDemoUser && (
+              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-brand-500/20 text-brand-300">
+                Demo Account
+              </span>
+            )}
+          </div>
+          <p className="text-xs text-slate-400 mt-0.5">{user.email || 'guest@pennypilot.app'}</p>
+        </div>
       </Card>
 
       {/* Currency & Budget Preferences */}
@@ -147,6 +133,20 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
           </Button>
         </div>
       </Card>
+
+      {/* Account Log Out Action at bottom of Profile screen */}
+      {onLogout && (
+        <Card variant="glass" className="p-4 border-slate-800">
+          <Button
+            variant="outline"
+            className="w-full justify-center text-sm font-semibold border-rose-500/40 text-rose-400 hover:bg-rose-500/20 hover:text-white hover:border-rose-500 py-3 transition-all"
+            leftIcon={<LogOut className="w-4 h-4" />}
+            onClick={onLogout}
+          >
+            Log Out of Account
+          </Button>
+        </Card>
+      )}
 
       {/* Account Deletion Confirmation Modal */}
       <Modal
