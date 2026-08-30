@@ -48,7 +48,7 @@ export async function saveUserProfile(user: UserProfile): Promise<void> {
   }
 }
 
-// Expenses Firestore Methods
+// Expenses Firestore Methods (Account-ID Based Subcollections)
 export async function saveExpenseToFirestore(userId: string, expense: Expense): Promise<void> {
   if (!env.firebase.isConfigured) return;
 
@@ -69,20 +69,16 @@ export async function saveExpenseToFirestore(userId: string, expense: Expense): 
     const rawData = { ...expense, id: expId, userId: activeUid };
     const expenseData = sanitizeFirestoreData(rawData);
 
-    // 1. Save to top-level expenses collection (visible immediately in Firebase Console)
-    const globalExpRef = doc(db, 'expenses', expId);
-    await setDoc(globalExpRef, expenseData, { merge: true });
-
-    // 2. Save to user subcollection
+    // Account-ID Based User Subcollection: users/{userId}/expenses/{expId}
     const expRef = doc(db, 'users', activeUid, 'expenses', expId);
     await setDoc(expRef, expenseData, { merge: true });
 
-    // 3. Sync to group subcollection if applicable
+    // Group Subcollection if applicable: groups/{groupId}/expenses/{expId}
     if (expense.groupId) {
       const groupExpRef = doc(db, 'groups', expense.groupId, 'expenses', expId);
       await setDoc(groupExpRef, expenseData, { merge: true });
     }
-    console.log('Successfully saved expense to Firebase Firestore:', expId);
+    console.log(`Successfully saved expense to user [${activeUid}] Firestore subcollection:`, expId);
   } catch (err) {
     console.error('Could not save expense to Firestore:', err);
   }
@@ -98,10 +94,7 @@ export async function syncExpensesToFirestore(userId: string, expenses: Expense[
       const rawData = { ...exp, id: expId, userId: activeUid };
       const expenseData = sanitizeFirestoreData(rawData);
 
-      // Write to top-level expenses collection
-      await setDoc(doc(db, 'expenses', expId), expenseData, { merge: true });
-
-      // Write to user subcollection
+      // Account-ID Based User Subcollection: users/{userId}/expenses/{expId}
       await setDoc(doc(db, 'users', activeUid, 'expenses', expId), expenseData, { merge: true });
 
       if (exp.groupId) {
@@ -118,9 +111,6 @@ export async function deleteExpenseFromFirestore(userId: string, expenseId: stri
   const currentUid = auth.currentUser ? auth.currentUser.uid : userId;
 
   try {
-    const globalExpRef = doc(db, 'expenses', expenseId);
-    await deleteDoc(globalExpRef);
-
     const expRef = doc(db, 'users', currentUid, 'expenses', expenseId);
     await deleteDoc(expRef);
 
