@@ -151,9 +151,13 @@ export function App() {
         // Authenticated real user
         setUser(authProfile);
         setIsLoggedIn(true);
+        setActiveTab('home');
         localStorage.setItem('pennypilot_logged_in', 'true');
         localStorage.setItem('pennypilot_user', JSON.stringify(authProfile));
         showToast(`Signed in as ${authProfile.displayName}`, 'success');
+      } else {
+        setExpenses([]);
+        localStorage.removeItem('pennypilot_expenses');
       }
     });
     return () => unsubscribe();
