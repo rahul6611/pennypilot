@@ -17,6 +17,8 @@ import { SettleUpModal } from '../features/settlements/components/SettleUpModal'
 import { CopilotChat } from '../features/ai/components/CopilotChat';
 import { MonthlyReportView } from '../features/ai/components/MonthlyReportView';
 import { AnalyticsView } from '../features/analytics/components/AnalyticsView';
+import { MonthlyTrackerView } from '../features/analytics/components/MonthlyTrackerView';
+import { MonthDetailView } from '../features/analytics/components/MonthDetailView';
 import { RecurringList } from '../features/recurring/components/RecurringList';
 import { ProfileView } from '../features/profile/components/ProfileView';
 import { initThemeListener } from '../utils/themeService';
@@ -81,6 +83,7 @@ export function App() {
   // Scroll to top when switching navigation tabs
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    setMonthDetailOpen(false);
   }, [activeTab]);
 
   // User Auth State & Protected Route
@@ -115,6 +118,8 @@ export function App() {
   }, []);
 
   const [selectedGroup, setSelectedGroup] = useState<Group | null>(null);
+  const [trackerMonth, setTrackerMonth] = useState(() => new Date().getFullYear() * 12 + new Date().getMonth());
+  const [monthDetailOpen, setMonthDetailOpen] = useState(false);
 
   // Modals state
   const [isAddExpenseOpen, setIsAddExpenseOpen] = useState(false);
@@ -519,7 +524,28 @@ export function App() {
 
             {/* SPENDING CHARTS & INSIGHTS TAB */}
             {activeTab === 'analytics' && (
+              monthDetailOpen ? (
+                <MonthDetailView
+                  expenses={expenses}
+                  monthIdx={trackerMonth}
+                  currency={user.currency}
+                  onBack={() => setMonthDetailOpen(false)}
+                  onChangeMonth={setTrackerMonth}
+                />
+              ) : (
               <div className="space-y-6">
+                <MonthlyTrackerView
+                  expenses={expenses}
+                  currency={user.currency}
+                  selectedIdx={trackerMonth}
+                  onSelectMonth={setTrackerMonth}
+                  onOpenMonth={(idx) => {
+                    setTrackerMonth(idx);
+                    setMonthDetailOpen(true);
+                    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+                  }}
+                />
+
                 <AnalyticsView expenses={expenses} monthlyBudget={user.monthlyBudget} currency={user.currency} />
 
                 <MonthlyReportView expenses={expenses} userBudget={user.monthlyBudget} currency={user.currency} />
@@ -533,6 +559,7 @@ export function App() {
 
                 <RecurringList items={recurringItems} currency={user.currency} />
               </div>
+              )
             )}
 
             {/* PROFILE TAB */}
